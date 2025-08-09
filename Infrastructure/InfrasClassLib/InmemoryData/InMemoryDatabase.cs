@@ -1,12 +1,18 @@
 ﻿using DomainClassLib.Model;
+using DomainClassLib.RequestModel;
 using System.Collections.Concurrent;
 
 namespace InfrasClassLib.InmemoryData
 {
     public static class InMemoryDatabase
     {
-        public static ConcurrentDictionary<string, List<ToDo>> _userToDoList = new ConcurrentDictionary<string, List<ToDo>>();
-
+        public static ConcurrentDictionary<string, List<ToDo>> _userToDoList = new ConcurrentDictionary<string, List<ToDo>>() {
+            ["abc"] = new List<ToDo>
+            {
+                new ToDo { Id = 1, Title = "Complete project documentation", Description = "test 1", IsCompleted = false, CreatedDate = DateTime.Now, CreatedBy = "1" },
+                new ToDo { Id = 2, Title = "Review pull requests", Description = "test 2",IsCompleted = true, CreatedDate = DateTime.Now, CreatedBy = "1"  }
+            },
+        };
 
         public static List<ToDo>? GetAllByUserID(string id)
         {
@@ -116,14 +122,6 @@ namespace InfrasClassLib.InmemoryData
             {
                 return true;
             }
-
-            return false;
-        }
-
-        public static bool CheckIfRecordExistsByToDoID(string id, int toDoId)
-        {
-            if (_userToDoList != null && _userToDoList.Any() && _userToDoList.ContainsKey(id) && _userToDoList.Any(i => i.Key == id && i.Value.Any(x => x.Id == toDoId)))
-                return true;
 
             return false;
         }

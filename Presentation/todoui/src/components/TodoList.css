@@ -4,7 +4,8 @@
     border-radius: 0.5rem;
     box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
     width: 100%;
-    max-width: 25rem;
+    max-width: 600px; /* add max width */
+    margin: 0 auto; /* center horizontally */
 }
 
     .todo-list h1 {
@@ -46,40 +47,59 @@
     padding: 0;
 }
 
-.todo-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.625rem;
-    border-bottom: 0.0625rem solid #333;
-}
-
-    .todo-list li:last-child {
-        border-bottom: none;
-    }
-
 .todo-list .text {
     flex: 1;
 }
 
+.todo-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem;
+    border-bottom: 1px solid #333;
+}
+
+/* Style for the group of buttons */
+.task-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
 .todo-list li button {
-    background: none;
+    background-color: #444;
+    color: #fff;
     border: none;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
     cursor: pointer;
-    font-size: 1rem;
-    margin-left: 0.625rem;
-    color: #e0e0e0;
+    transition: background-color 0.2s ease;
 }
 
     .todo-list li button:hover {
-        color: #007bff;
+        background-color: #666;
     }
 
-    .todo-list li button.delete-button {
-        color: #ff4d4d;
+/* Color variations */
+.todo-list li .delete-button {
+    background-color: #ff4d4d;
+}
+
+    .todo-list li .delete-button:hover {
+        background-color: #cc0000;
     }
 
-    .todo-list li button.up-button,
-    .todo-list li button.down-button {
-        color: #4caf50;
+.todo-list li .up-button,
+.todo-list li .down-button {
+    background-color: #4caf50;
+}
+
+    .todo-list li .up-button:hover,
+    .todo-list li .down-button:hover {
+        background-color: #388e3c;
     }
+
+.task-input.completed {
+    text-decoration: line-through;
+    color: gray;
+}

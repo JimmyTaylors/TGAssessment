@@ -29,6 +29,16 @@ builder.Services.AddSwaggerGen(
     }
 );
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // React dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,5 +55,5 @@ app.UseSwaggerUI(
         options.RoutePrefix = "swagger";
     }
 );
-
+app.UseCors();
 app.Run();

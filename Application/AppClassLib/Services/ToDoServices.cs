@@ -28,14 +28,7 @@ namespace AppClassLib.Services
 
             try
             {
-                if (InMemoryDatabase.CheckIfUserExists(userId))
-                {
-                    ret.ToDoList = InMemoryDatabase.GetAllByUserID(userId);
-
-                }
-
-                // Assuming that User is logged in and only check if user has any To Do records.
-                // It is consider success also when no Todo List found.
+                ret.ToDoList = InMemoryDatabase.GetAllByUserID(userId) ?? new List<ToDo>();
                 ret.ResponseCode = StatusCode.Success;
                 ret.ResponseMessage = StatusCode.Success.ToString();
 
@@ -72,13 +65,16 @@ namespace AppClassLib.Services
 
             try
             {
-                if (InMemoryDatabase.CheckIfRecordExistsByToDoID(userId, toDoId))
+                var toDoInfo = InMemoryDatabase.GetByUserIDByToDoID(userId, toDoId);
+
+                if (toDoInfo != null)
                 {
-                    ret.ToDoInfo = InMemoryDatabase.GetByUserIDByToDoID(userId, toDoId);
+                    ret.ToDoInfo = toDoInfo;
                     ret.ResponseCode = StatusCode.Success;
                     ret.ResponseMessage = StatusCode.Success.ToString();
                 }
-                else {
+                else
+                {
                     ret.ResponseCode = StatusCode.ToDoIDNotFound;
                     ret.ResponseMessage = StatusCode.ToDoIDNotFound.ToString();
                 }
@@ -124,37 +120,29 @@ namespace AppClassLib.Services
                 #endregion
 
                 var userId = createRequestModel.CreatedBy;
+                int toDoId = 1;
 
-                ToDo toDo = new ToDo();
-                int toDoID = 1;
-
-                if (!InMemoryDatabase.CheckIfUserExists(userId))
+                ToDo toDo = new ToDo() 
                 {
-                    toDo.Id = toDoID; // always 1 as new user
-                    toDo.Title = createRequestModel.Title;
-                    toDo.Description = createRequestModel.Description;
-                    toDo.CreatedDate = DateTime.Now;
-                    toDo.CreatedBy = createRequestModel.CreatedBy;
-                }
-                else 
-                {
-                    var userToDoList = InMemoryDatabase.GetAllByUserID(userId);
-                    toDoID = userToDoList.Count() + 1;
-                    toDo.Id = toDoID;
-                    toDo.Title = createRequestModel.Title;
-                    toDo.Description = createRequestModel.Description;
-                    toDo.CreatedDate = DateTime.Now;
-                    toDo.CreatedBy = createRequestModel.CreatedBy;
+                    Id = toDoId,
+                    Title = createRequestModel.Title,
+                    Description = createRequestModel.Description,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = createRequestModel.CreatedBy
+                };
 
+                if (InMemoryDatabase.CheckIfUserExists(userId))
+                {
+                    var todoList = InMemoryDatabase.GetAllByUserID(userId);
+                    toDoId = (todoList?.Count() ?? 0) + 1;
+                    toDo.Id = toDoId;
                 }
 
                 var isSuccess = InMemoryDatabase.CreateByUserId(userId, toDo);
 
                 if (isSuccess)
                 {
-                    ret.ToDoInfo = InMemoryDatabase.GetByUserIDByToDoID(userId, toDoID);
-                    ret.ResponseCode = StatusCode.Success;
-                    ret.ResponseMessage = StatusCode.Success.ToString();
+                    ret = GetByToDoID(userId, toDoId);
                 }
                 else
                 {
@@ -216,17 +204,17 @@ namespace AppClassLib.Services
 
                 if (updateRequestModel.Id != null && int.TryParse(updateRequestModel.Id.ToString(), out toDoID))
                 {
-                    if (InMemoryDatabase.CheckIfRecordExistsByToDoID(userId, toDoID))
+                    var toDoInfo = InMemoryDatabase.GetByUserIDByToDoID(userId, toDoID);
+
+                    if (toDoInfo != null)
                     {
-                        var todo = InMemoryDatabase.GetByUserIDByToDoID(userId, toDoID);
+                        toDoInfo.Title = updateRequestModel.Title;
+                        toDoInfo.Description = updateRequestModel.Description;
+                        toDoInfo.IsCompleted = updateRequestModel.IsCompleted;
+                        toDoInfo.UpdatedBy = updateRequestModel.UpdatedBy;
+                        toDoInfo.UpdatedDate = DateTime.Now;
 
-                        todo.Title = updateRequestModel.Title;
-                        todo.Description = updateRequestModel.Description;
-                        todo.IsCompleted = updateRequestModel.IsCompleted;
-                        todo.UpdatedBy = updateRequestModel.UpdatedBy;
-                        todo.UpdatedDate = DateTime.Now;
-
-                        isSuccessUpdate = InMemoryDatabase.UpdateByUserId(userId, todo);
+                        isSuccessUpdate = InMemoryDatabase.UpdateByUserId(userId, toDoInfo);
                     }
                     else
                     {
@@ -237,9 +225,7 @@ namespace AppClassLib.Services
 
                 if (isSuccessUpdate)
                 {
-                    ret.ToDoInfo = InMemoryDatabase.GetByUserIDByToDoID(userId, toDoID);
-                    ret.ResponseCode = StatusCode.Success;
-                    ret.ResponseMessage = StatusCode.Success.ToString();
+                    ret = GetByToDoID(userId, toDoID);
                 }
                 else
                 {
@@ -280,14 +266,8 @@ namespace AppClassLib.Services
                 }
                 #endregion
 
-                bool isSuccessDelete = false;
+                bool isSuccessDelete = InMemoryDatabase.DeleteByUserIdByToDoID(userId, toDoId); 
 
-
-                if (InMemoryDatabase.CheckIfRecordExistsByToDoID(userId, toDoId))
-                {
-                    isSuccessDelete = InMemoryDatabase.DeleteByUserIdByToDoID(userId, toDoId);
-                }
-                    
                 if (isSuccessDelete)
                 {
                     ret.ResponseCode = StatusCode.Success;
